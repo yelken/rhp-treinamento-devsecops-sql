@@ -1,0 +1,60 @@
+name: CI - DevSecOps SQL
+on:
+  push:
+  pull_request:
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: rhp
+          POSTGRES_PASSWORD: rhp_password
+          POSTGRES_DB: hospital
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U rhp -d hospital"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install tools
+        run: |
+          pip install sqlfluff==3.1.0
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz | tar -xz
+          sudo mv gitleaks /usr/local/bin/gitleaks
+
+      - name: Lint SQL
+        run: |
+          sqlfluff lint .
+
+      - name: Secrets scan
+        run: |
+          gitleaks detect --no-git -c .gitleaks.toml
+
+      - name: Load schema and data
+        env:
+          PGPASSWORD: rhp_password
+        run: |
+          psql -h localhost -p 5432 -U rhp -d hospital -f db/init/00_extensions.sql
+          psql -h localhost -p 5432 -U rhp -d hospital -f db/init/01_schema.sql
+          psql -h localhost -p 5432 -U rhp -d hospital -f db/init/02_seed.sql
+
+      - name: Sanity SQL checks
+        env:
+          PGPASSWORD: rhp_password
+        run: |
+          psql -h localhost -p 5432 -U rhp -d hospital -c "SELECT COUNT(*) FROM hospital_data.patients;"
+          psql -h localhost -p 5432 -U rhp -d hospital -c "SELECT COUNT(*) FROM hospital_data.lab_results;"
+
+

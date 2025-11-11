@@ -1,0 +1,43 @@
+SET search_path TO hospital_data, public;
+
+-- TODO:
+-- 1) Criar colunas cifradas (recomendado para migração segura):
+--    ALTER TABLE patients
+--      ADD COLUMN IF NOT EXISTS phone_enc BYTEA,
+--      ADD COLUMN IF NOT EXISTS ssn_enc BYTEA;
+--
+--    (Alternativa mais intrusiva) Alterar tipo das colunas atuais para BYTEA:
+--    ALTER TABLE patients ALTER COLUMN phone TYPE BYTEA USING pgp_sym_encrypt(phone, current_setting('app.encryption_key'));
+--
+-- 2) Implementar funções utilitárias usando current_setting('app.encryption_key'):
+--    CREATE OR REPLACE FUNCTION set_encrypted_phone(p_id INT, p_plain TEXT) RETURNS VOID AS $$
+--    DECLARE
+--      k TEXT := current_setting('app.encryption_key', true);
+--    BEGIN
+--      IF k IS NULL THEN
+--        RAISE EXCEPTION 'Defina app.encryption_key na sessão.';
+--      END IF;
+--      UPDATE patients SET phone_enc = pgp_sym_encrypt(p_plain, k) WHERE id = p_id;
+--    END; $$ LANGUAGE plpgsql;
+--
+--    CREATE OR REPLACE FUNCTION get_decrypted_phone(p_id INT) RETURNS TEXT AS $$
+--    DECLARE
+--      k TEXT := current_setting('app.encryption_key', true);
+--      v TEXT;
+--    BEGIN
+--      IF k IS NULL THEN
+--        RAISE EXCEPTION 'Defina app.encryption_key na sessão.';
+--      END IF;
+--      SELECT pgp_sym_decrypt(phone_enc, k) INTO v FROM patients WHERE id = p_id;
+--      RETURN v;
+--    END; $$ LANGUAGE plpgsql;
+--
+-- 3) Migrar dados legados (requer chave na sessão):
+--    -- SET app.encryption_key = 'sua_chave_segura';
+--    UPDATE patients
+--    SET phone_enc = CASE WHEN phone IS NOT NULL THEN pgp_sym_encrypt(phone, current_setting('app.encryption_key')) ELSE NULL END,
+--        ssn_enc   = CASE WHEN ssn   IS NOT NULL THEN pgp_sym_encrypt(ssn,   current_setting('app.encryption_key')) ELSE NULL END;
+--
+-- 4) Validar e, se aprovado, planejar remoção/limpeza das colunas em claro (phone, ssn)
+
+

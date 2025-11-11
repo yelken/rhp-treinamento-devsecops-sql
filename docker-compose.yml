@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:15
+    container_name: rhp_psql
+    command: ["postgres","-c","shared_preload_libraries=pg_stat_statements"]
+    environment:
+      POSTGRES_USER: rhp
+      POSTGRES_PASSWORD: rhp_password
+      POSTGRES_DB: hospital
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rhp -d hospital"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/postgresql/data
+  tools:
+    build:
+      context: ./docker/tools
+    working_dir: /work
+    volumes:
+      - ./:/work
+volumes:
+  db_data:
+
+

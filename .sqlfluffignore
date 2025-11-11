@@ -1,0 +1,8 @@
+db/init/**
+exercises/**/queries/bad.sql
+exercises/**/queries/bad_query.sql
+exercises/ex02-segredos/test_connection.sql
+solutions/ex06-rls/rls.sql
+solutions/ex07-masking/masked_views.sql
+
+

@@ -1,0 +1,6 @@
+* @dados-rhp-core
+/db/* @dados-rhp-core
+/exercises/* @dados-rhp-trainers
+/solutions/* @dados-rhp-trainers
+
+

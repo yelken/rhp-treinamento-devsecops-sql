@@ -1,0 +1,24 @@
+# Regras básicas de exemplo para detectar credenciais acidentais
+title = "RHP DevSecOps SQL - Gitleaks"
+
+[[rules]]
+id = "generic-api-key"
+description = "Possível API key"
+regex = '''(?i)(api[_-]?key|token|secret|password)["'\s:=]+[A-Za-z0-9_\-]{16,}'''
+tags = ["key", "api", "generic"]
+
+[[rules]]
+id = "pg-connection-string"
+description = "Possível string de conexão Postgres"
+regex = '''postgres(ql)?:\/\/[^:\s]+:[^@\s]+@[^:\s]+:\d+\/[A-Za-z0-9_\-]+'''
+tags = ["db", "postgres", "secret"]
+
+[allowlist]
+description = "Permite senhas de exemplo específicas de treinamento"
+regexTarget = "match"
+regexes = [
+  "rhp_password",
+  "postgres:\\/\\/rhp:rhp_password@localhost:5432\\/hospital"
+]
+
+
