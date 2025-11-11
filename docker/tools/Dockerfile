@@ -19,9 +19,9 @@ ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
 RUN pip config set global.trusted-host "pypi.org files.pythonhosted.org" && \
     pip install --no-cache-dir sqlfluff==3.1.0
 
-# gitleaks
+# gitleaks (com fallback -k para ambientes com interceptação TLS)
 ARG GITLEAKS_VERSION=8.18.4
-RUN curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz \
+RUN curl -fsSLk https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz \
   | tar -xz && mv gitleaks /usr/local/bin/gitleaks
 
 WORKDIR /work
