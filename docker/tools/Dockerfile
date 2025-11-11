@@ -9,8 +9,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
  && rm -rf /var/lib/apt/lists/*
 
-# sqlfluff
-RUN pip install --no-cache-dir sqlfluff==3.1.0
+# (Opcional) Confiar em CAs corporativas: coloque .crt(s) em docker/tools/certs/
+COPY certs/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates || true
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+
+# sqlfluff (com fallback para ambiente corporativo sem cadeia completa)
+RUN pip config set global.trusted-host "pypi.org files.pythonhosted.org" && \
+    pip install --no-cache-dir sqlfluff==3.1.0
 
 # gitleaks
 ARG GITLEAKS_VERSION=8.18.4
