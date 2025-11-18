@@ -25,6 +25,8 @@
     - User: `rhp`
     - Password: `rhp_password`
  
+
+ 
  ### Estrutura
  - `docker-compose.yml`: orquestra o Postgres e carrega o schema/dados.
  - `db/init`: DDL/DML e dados de exemplo (carregados automaticamente).

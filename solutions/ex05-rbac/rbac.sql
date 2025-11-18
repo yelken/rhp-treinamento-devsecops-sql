@@ -35,6 +35,9 @@ GRANT SELECT ON hospital_data.departments TO report_reader;
 
 -- etl_writer: escrita somente em lab_results (exemplo)
 GRANT SELECT, INSERT, UPDATE ON hospital_data.lab_results TO etl_writer;
+-- permissões na sequência para inserção com default nextval()
+GRANT USAGE, SELECT ON SEQUENCE hospital_data.lab_results_id_seq TO etl_writer;
+ALTER DEFAULT PRIVILEGES IN SCHEMA hospital_data GRANT USAGE, SELECT ON SEQUENCES TO etl_writer;
 
 -- auditor: leitura ampla sem escrita
 GRANT SELECT ON ALL TABLES IN SCHEMA hospital_data TO auditor;
